@@ -19,7 +19,6 @@ import '../games_services/score.dart';
 import '../in_app_purchase/in_app_purchase.dart';
 import '../level_selection/levels.dart';
 import '../player_progress/player_progress.dart';
-import '../style/confetti.dart';
 import '../style/palette.dart';
 
 class PlaySessionScreen extends StatefulWidget {
@@ -50,7 +49,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
       providers: [
         ChangeNotifierProvider(
           create: (context) => LevelState(
-            goal: widget.level.difficulty,
+            goal: widget.level.emptySquares,
             onWin: _playerWon,
           ),
         ),
@@ -140,7 +139,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
     final score = Score(
       widget.level.number,
-      widget.level.difficulty,
+      widget.level.emptySquares,
       DateTime.now().difference(_startOfPlay),
     );
 

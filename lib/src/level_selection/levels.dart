@@ -5,7 +5,8 @@
 const gameLevels = [
   GameLevel(
     number: 1,
-    difficulty: 5,
+    name: 'Beginner',
+    emptySquares: 20,
     // TODO: When ready, change these achievement IDs.
     // You configure this in App Store Connect.
     achievementIdIOS: 'first_win',
@@ -14,11 +15,19 @@ const gameLevels = [
   ),
   GameLevel(
     number: 2,
-    difficulty: 42,
+    name: 'Easy',
+    emptySquares: 30,
   ),
   GameLevel(
     number: 3,
-    difficulty: 100,
+    name: 'Medium',
+    emptySquares: 40,
+  ),
+  GameLevel(
+    number: 4,
+    name: 'Hard',
+    emptySquares: 54
+    ,
     achievementIdIOS: 'finished',
     achievementIdAndroid: 'CdfIhE96aspNWLGSQg',
   ),
@@ -27,7 +36,9 @@ const gameLevels = [
 class GameLevel {
   final int number;
 
-  final int difficulty;
+  final String name;
+
+  final int emptySquares;
 
   /// The achievement to unlock when the level is finished, if any.
   final String? achievementIdIOS;
@@ -38,7 +49,8 @@ class GameLevel {
 
   const GameLevel({
     required this.number,
-    required this.difficulty,
+    required this.name,
+    required this.emptySquares,
     this.achievementIdIOS,
     this.achievementIdAndroid,
   }) : assert(

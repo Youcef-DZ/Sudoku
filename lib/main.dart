@@ -76,7 +76,7 @@ void guardedMain() {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  _log.info('Going full screen');
+  //_log.info('Going full screen');
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.edgeToEdge,
   );
@@ -121,7 +121,7 @@ void guardedMain() {
   );
 }
 
-Logger _log = Logger('main.dart');
+//Logger _log = Logger('main.dart');
 
 class MyApp extends StatelessWidget {
   static final _router = GoRouter(

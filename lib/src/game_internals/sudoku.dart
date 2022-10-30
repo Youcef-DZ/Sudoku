@@ -16,6 +16,7 @@ import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sudoku_solver_generator/sudoku_solver_generator.dart';
 
+import '../level_selection/levels.dart';
 import '../../alerts/all.dart';
 import 'board_style.dart';
 import 'splash_screen_page.dart';
@@ -204,39 +205,10 @@ class HomePageState extends State<HomePage> {
 
   static Future<List<List<List<int>>>> getNewGame(
       [String difficulty = 'easy']) async {
-    int emptySquares;
-    switch (difficulty) {
-      case 'test':
-        {
-          emptySquares = 2;
-        }
-        break;
-      case 'beginner':
-        {
-          emptySquares = 18;
-        }
-        break;
-      case 'easy':
-        {
-          emptySquares = 27;
-        }
-        break;
-      case 'medium':
-        {
-          emptySquares = 36;
-        }
-        break;
-      case 'hard':
-        {
-          emptySquares = 54;
-        }
-        break;
-      default:
-        {
-          emptySquares = 2;
-        }
-        break;
-    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final int emptySquares = prefs.getInt('emptySquares') ?? 20;
+
     SudokuGenerator generator = SudokuGenerator(emptySquares: emptySquares);
     return [generator.newSudoku, generator.newSudokuSolved];
   }
@@ -410,15 +382,15 @@ class HomePageState extends State<HomePage> {
                   Timer(const Duration(milliseconds: 200), () => restartGame());
                 },
               ),
-              ListTile(
-                leading: Icon(Icons.add_rounded, color: Styles.foregroundColor),
-                title: Text('New Game', style: customStyle),
-                onTap: () {
-                  Navigator.pop(context);
-                  Timer(const Duration(milliseconds: 200),
-                      () => newGame(currentDifficultyLevel!));
-                },
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.add_rounded, color: Styles.foregroundColor),
+              //   title: Text('New Game', style: customStyle),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     Timer(const Duration(milliseconds: 200),
+              //         () => newGame(currentDifficultyLevel!));
+              //   },
+              // ),
               ListTile(
                 leading: Icon(Icons.lightbulb_outline_rounded,
                     color: Styles.foregroundColor),
@@ -432,7 +404,7 @@ class HomePageState extends State<HomePage> {
               ListTile(
                 leading:
                     Icon(Icons.build_outlined, color: Styles.foregroundColor),
-                title: Text('Set Difficulty', style: customStyle),
+                title: Text('New Game', style: customStyle),
                 onTap: () {
                   Navigator.pop(context);
                   Timer(

@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
@@ -42,17 +43,20 @@ class LevelSelectionScreen extends StatelessWidget {
                 children: [
                   for (final level in gameLevels)
                     ListTile(
-                      enabled: playerProgress.highestLevelReached >=
-                          level.number - 1,
-                      onTap: () {
+                      // enabled: playerProgress.highestLevelReached >=
+                      //     level.number - 1,
+                      onTap: () async {
                         final audioController = context.read<AudioController>();
+                        final prefs = await SharedPreferences.getInstance();
+
                         audioController.playSfx(SfxType.buttonTap);
+                        prefs.setInt('emptySquares', level.emptySquares);
 
                         GoRouter.of(context)
                             .go('/play/session/${level.number}');
                       },
-                      leading: Text(level.number.toString()),
-                      title: Text('Level #${level.number}'),
+                      //leading: Text(level.number.toString()),
+                      title: Text(level.name),
                     )
                 ],
               ),
