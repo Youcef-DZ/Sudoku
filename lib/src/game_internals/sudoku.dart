@@ -47,6 +47,7 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
+  static KeyPadNumbers keyPad = new KeyPadNumbers();
   bool firstRun = true;
   bool gameOver = false;
   int timesCalled = 0;
@@ -572,7 +573,7 @@ class HomePageState extends State<HomePage> {
                       Padding(
                         padding: const EdgeInsets.only(top: 20),
                         child: Column(
-                          children: KeyPadNumbers().createKeyPad(),
+                          children: keyPad.createKeyPad(),
                         ),
                       ),
                     ],
