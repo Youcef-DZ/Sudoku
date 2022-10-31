@@ -230,5 +230,6 @@ class _PaperSnipping {
 
 class _Vector {
   double x, y;
+
   _Vector(this.x, this.y);
 }

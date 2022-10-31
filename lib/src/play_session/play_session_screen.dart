@@ -78,14 +78,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     // const Spacer(),
                     Expanded(
                       child: Consumer<LevelState>(
-                        builder: (context, levelState, child) => HomePage(
-                            // label: 'Level Progress',
-                            // autofocus: true,
-                            // value: levelState.progress / 100,
-                            // onChanged: (value) =>
-                            //     levelState.setProgress((value * 100).round()),
-                            // onChangeEnd: (value) => levelState.evaluate(),
-                            ),
+                        builder: (context, levelState, child) => HomePage(),
                       ),
                     ),
                     // const Spacer(),

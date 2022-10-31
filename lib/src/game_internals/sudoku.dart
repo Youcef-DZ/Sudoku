@@ -16,16 +16,15 @@ import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sudoku_solver_generator/sudoku_solver_generator.dart';
 
-import '../level_selection/levels.dart';
 import '../../alerts/all.dart';
-import 'board_style.dart';
-import 'splash_screen_page.dart';
 import '../style/styles.dart';
+import '../style/button_style.dart';
+import 'splash_screen_page.dart';
 
 class Sudoku extends StatelessWidget {
   const Sudoku({Key? key}) : super(key: key);
 
-  static const String versionNumber = '2.4.1';
+  static const String versionNumber = '0.0.1';
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +204,6 @@ class HomePageState extends State<HomePage> {
 
   static Future<List<List<List<int>>>> getNewGame(
       [String difficulty = 'easy']) async {
-
     final prefs = await SharedPreferences.getInstance();
     final int emptySquares = prefs.getInt('emptySquares') ?? 20;
 
@@ -217,7 +215,7 @@ class HomePageState extends State<HomePage> {
     return grid.map((row) => [...row]).toList();
   }
 
-  void setGame(int mode, [String difficulty = 'easy']) async {
+  void setGame(int mode, [String difficulty = 'Easy']) async {
     if (mode == 1) {
       game = List.filled(9, [0, 0, 0, 0, 0, 0, 0, 0, 0]);
       gameCopy = List.filled(9, [0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -239,7 +237,7 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  void newGame([String difficulty = 'easy']) {
+  void newGame([String difficulty = 'Easy']) {
     setState(() {
       isFABDisabled = !isFABDisabled;
     });
@@ -280,16 +278,8 @@ class HomePageState extends State<HomePage> {
           onPressed: isButtonDisabled || gameCopy[k][i] != 0
               ? null
               : () {
-                  showAnimatedDialog<void>(
-                          animationType: DialogTransitionType.fade,
-                          barrierDismissible: true,
-                          duration: const Duration(milliseconds: 300),
-                          context: context,
-                          builder: (_) => const AlertNumbersState())
-                      .whenComplete(() {
-                    callback([k, i], AlertNumbersState.number);
-                    AlertNumbersState.number = null;
-                  });
+                  callback([k, i], KeyPadNumbers.number);
+                    KeyPadNumbers.number = null;
                 },
           onLongPress: isButtonDisabled || gameCopy[k][i] != 0
               ? null
@@ -310,7 +300,7 @@ class HomePageState extends State<HomePage> {
             }),
             shape: MaterialStateProperty.all<OutlinedBorder>(
                 RoundedRectangleBorder(
-              borderRadius: buttonEdgeRadius(k, i),
+              borderRadius: buttonEdgeRadius(k, i, 9),
             )),
             side: MaterialStateProperty.all<BorderSide>(BorderSide(
               color: Styles.foregroundColor,
@@ -374,14 +364,14 @@ class HomePageState extends State<HomePage> {
               TextStyle(inherit: false, color: Styles.foregroundColor);
           return Wrap(
             children: [
-              ListTile(
-                leading: Icon(Icons.refresh, color: Styles.foregroundColor),
-                title: Text('Restart Game', style: customStyle),
-                onTap: () {
-                  Navigator.pop(context);
-                  Timer(const Duration(milliseconds: 200), () => restartGame());
-                },
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.refresh, color: Styles.foregroundColor),
+              //   title: Text('Restart Game', style: customStyle),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     Timer(const Duration(milliseconds: 200), () => restartGame());
+              //   },
+              // ),
               // ListTile(
               //   leading: Icon(Icons.add_rounded, color: Styles.foregroundColor),
               //   title: Text('New Game', style: customStyle),
@@ -391,16 +381,16 @@ class HomePageState extends State<HomePage> {
               //         () => newGame(currentDifficultyLevel!));
               //   },
               // ),
-              ListTile(
-                leading: Icon(Icons.lightbulb_outline_rounded,
-                    color: Styles.foregroundColor),
-                title: Text('Show Solution', style: customStyle),
-                onTap: () {
-                  Navigator.pop(context);
-                  Timer(
-                      const Duration(milliseconds: 200), () => showSolution());
-                },
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.lightbulb_outline_rounded,
+              //       color: Styles.foregroundColor),
+              //   title: Text('Show Solution', style: customStyle),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     Timer(
+              //         const Duration(milliseconds: 200), () => showSolution());
+              //   },
+              // ),
               ListTile(
                 leading:
                     Icon(Icons.build_outlined, color: Styles.foregroundColor),
@@ -509,52 +499,84 @@ class HomePageState extends State<HomePage> {
             backgroundColor: Styles.primaryBackgroundColor,
             resizeToAvoidBottomInset: false,
             appBar: PreferredSize(
-                preferredSize: const Size.fromHeight(56.0),
-                child: isDesktop
-                    ? MoveWindow(
-                        onDoubleTap: () => appWindow.maximizeOrRestore(),
-                        child: AppBar(
-                          centerTitle: true,
-                          title: const Text('Sudoku'),
-                          backgroundColor: Styles.primaryColor,
-                          actions: [
-                            IconButton(
-                              icon: const Icon(Icons.minimize_outlined),
-                              padding: const EdgeInsets.fromLTRB(8, 0, 8, 15),
-                              onPressed: () {
-                                appWindow.minimize();
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close_rounded),
-                              padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
-                              onPressed: () {
-                                showAnimatedDialog<void>(
-                                    animationType:
-                                        DialogTransitionType.fadeScale,
-                                    barrierDismissible: true,
-                                    duration: const Duration(milliseconds: 350),
-                                    context: context,
-                                    builder: (_) => const AlertExit());
-                              },
-                            ),
-                          ],
-                        ),
-                      )
-                    : AppBar(
-                        leading: IconButton(
-                          icon: Icon(Icons.arrow_back),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
+              preferredSize: const Size.fromHeight(56.0),
+              child: isDesktop
+                  ? MoveWindow(
+                      onDoubleTap: () => appWindow.maximizeOrRestore(),
+                      child: AppBar(
                         centerTitle: true,
                         title: const Text('Sudoku'),
                         backgroundColor: Styles.primaryColor,
-                      )),
+                        actions: [
+                          IconButton(
+                            icon: const Icon(Icons.refresh),
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 15),
+                            onPressed: () {
+                              appWindow.minimize();
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
+                            onPressed: () {
+                              showAnimatedDialog<void>(
+                                  animationType: DialogTransitionType.fadeScale,
+                                  barrierDismissible: true,
+                                  duration: const Duration(milliseconds: 350),
+                                  context: context,
+                                  builder: (_) => const AlertExit());
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                  : AppBar(
+                      centerTitle: true,
+                      title: const Text('Sudoku'),
+                      backgroundColor: Styles.primaryColor,
+                      leading: IconButton(
+                        icon: Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      actions: [
+                        IconButton(
+                          icon: Icon(Icons.refresh),
+                          onPressed: () {
+                            //Navigator.pop(context);
+                            Timer(const Duration(milliseconds: 200),
+                                () => restartGame());
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.lightbulb_outline_rounded),
+                          padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
+                          onPressed: () {
+                            //Navigator.pop(context);
+                            Timer(const Duration(milliseconds: 200),
+                                () => showSolution());
+                          },
+                        ),
+                      ],
+                    ),
+            ),
             body: Builder(builder: (builder) {
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: createRows(),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Column(
+                        children: createRows(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Column(
+                          children: KeyPadNumbers().createKeyPad(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
