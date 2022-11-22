@@ -359,6 +359,13 @@
             </list>
           </value>
         </entry>
+        <entry key="google_fonts">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/google_fonts-3.0.1/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="google_mobile_ads">
           <value>
             <list>
@@ -992,6 +999,7 @@
       <root url="file://$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/games_services_platform_interface-3.0.0/lib" />
       <root url="file://$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/glob-2.1.0/lib" />
       <root url="file://$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/go_router-5.1.1/lib" />
+      <root url="file://$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/google_fonts-3.0.1/lib" />
       <root url="file://$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/google_mobile_ads-2.2.0/lib" />
       <root url="file://$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/html-0.15.1/lib" />
       <root url="file://$PROJECT_DIR$/../../../Flutter/.pub-cache/hosted/pub.dartlang.org/http-0.13.5/lib" />

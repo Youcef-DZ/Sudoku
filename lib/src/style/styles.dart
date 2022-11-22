@@ -183,11 +183,11 @@ class Styles {
     900: Color(0xff148f53)
   });
 
-  static MaterialColor primaryBackgroundColor = darkGrey;
-  static MaterialColor secondaryBackgroundColor = grey;
-  static MaterialColor foregroundColor = white;
-  static MaterialColor primaryColor = ionicBlue;
-  static MaterialColor secondaryColor = lightRed;
+  static MaterialColor primaryBackgroundColor = Colors.blueGrey;
+  static MaterialColor secondaryBackgroundColor = Colors.grey;
+  static MaterialColor foregroundColor = Colors.amber;
+  static MaterialColor primaryColor = Colors.blueGrey;
+  static MaterialColor secondaryColor = Colors.amber;
 
   static final Map<String, MaterialColor> accentColors = {
     'Cyan': ionicCyan,

@@ -5,13 +5,10 @@ import '../src/game_internals/sudoku.dart';
 import '../src/style/styles.dart';
 
 class AlertAbout extends StatelessWidget {
-  static const String authorURL = "https://www.github.com/VarunS2002/";
-  static const String releasesURL =
-      "https://github.com/VarunS2002/Flutter-Sudoku/releases/";
-  static const String sourceURL =
-      "https://github.com/VarunS2002/Flutter-Sudoku/";
-  static const String licenseURL =
-      "https://github.com/VarunS2002/Flutter-Sudoku/blob/master/LICENSE";
+  static const String authorURL = "";
+  static const String releasesURL = "";
+  static const String sourceURL = "";
+  static const String licenseURL = "";
 
   const AlertAbout({Key? key}) : super(key: key);
 
@@ -107,7 +104,7 @@ class AlertAbout extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Author: ',
+                'Developer: ',
                 style: TextStyle(
                     color: Styles.foregroundColor,
                     fontFamily: 'roboto',
@@ -116,74 +113,13 @@ class AlertAbout extends StatelessWidget {
               InkWell(
                 onTap: () => openURL(authorURL),
                 child: Text(
-                  'VarunS2002',
+                  'Surfeed',
                   style: TextStyle(
                       color: Styles.primaryColor,
                       fontFamily: 'roboto',
                       fontSize: 15),
                 ),
               )
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '                ',
-                style: TextStyle(
-                    color: Styles.foregroundColor,
-                    fontFamily: 'roboto',
-                    fontSize: 15),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'License: ',
-                style: TextStyle(
-                    color: Styles.foregroundColor,
-                    fontFamily: 'roboto',
-                    fontSize: 15),
-              ),
-              InkWell(
-                onTap: () => openURL(licenseURL),
-                child: Text(
-                  'GNU GPLv3',
-                  style: TextStyle(
-                      color: Styles.primaryColor,
-                      fontFamily: 'roboto',
-                      fontSize: 15),
-                ),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '                ',
-                style: TextStyle(
-                    color: Styles.foregroundColor,
-                    fontFamily: 'roboto',
-                    fontSize: 15),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              InkWell(
-                onTap: () => openURL(sourceURL),
-                child: Text(
-                  'Source Code',
-                  style: TextStyle(
-                      color: Styles.primaryColor,
-                      fontFamily: 'roboto',
-                      fontSize: 15),
-                ),
-              ),
             ],
           ),
         ],

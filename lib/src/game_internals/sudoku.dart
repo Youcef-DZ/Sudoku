@@ -13,12 +13,14 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sudoku_solver_generator/sudoku_solver_generator.dart';
 
 import '../../alerts/all.dart';
 import '../style/styles.dart';
 import '../style/button_style.dart';
+import 'position.dart';
 import 'splash_screen_page.dart';
 
 class Sudoku extends StatelessWidget {
@@ -47,19 +49,18 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  static KeyPadNumbers keyPad = new KeyPadNumbers();
   bool firstRun = true;
   bool gameOver = false;
-  int timesCalled = 0;
-  bool isButtonDisabled = false;
   bool isFABDisabled = false;
+  late int selectedKey;
+  late Position selectedCell;
   late List<List<List<int>>> gameList;
   late List<List<int>> game;
-  late List<List<int>> gameCopy;
   late List<List<int>> gameSolved;
   static String? currentDifficultyLevel;
   static String? currentTheme;
   static String? currentAccentColor;
+
   static String platform = () {
     if (kIsWeb) {
       return 'web-${defaultTargetPlatform.toString().replaceFirst("TargetPlatform.", "").toLowerCase()}';
@@ -102,9 +103,9 @@ class HomePageState extends State<HomePage> {
         currentAccentColor = 'Blue';
         setPrefs('currentAccentColor');
       }
-      newGame(currentDifficultyLevel!);
-      changeTheme('set');
-      changeAccentColor(currentAccentColor!, true);
+      _newGame(currentDifficultyLevel!);
+      _changeTheme('set');
+      _changeAccentColor(currentAccentColor!, true);
     });
   }
 
@@ -128,7 +129,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  void changeTheme(String mode) {
+  void _changeTheme(String mode) {
     setState(() {
       if (currentTheme == 'light') {
         if (mode == 'switch') {
@@ -157,7 +158,7 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  void changeAccentColor(String color, [bool firstRun = false]) {
+  void _changeAccentColor(String color, [bool firstRun = false]) {
     setState(() {
       if (Styles.accentColors.keys.contains(color)) {
         Styles.primaryColor = Styles.accentColors[color]!;
@@ -176,10 +177,9 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  void checkResult() {
+  void _checkResult() {
     try {
       if (SudokuUtilities.isSolved(game)) {
-        isButtonDisabled = !isButtonDisabled;
         gameOver = true;
         Timer(const Duration(milliseconds: 500), () {
           showAnimatedDialog<void>(
@@ -189,11 +189,8 @@ class HomePageState extends State<HomePage> {
               context: context,
               builder: (_) => const AlertGameOver()).whenComplete(() {
             if (AlertGameOver.newGame) {
-              newGame();
+              _newGame();
               AlertGameOver.newGame = false;
-            } else if (AlertGameOver.restartGame) {
-              restartGame();
-              AlertGameOver.restartGame = false;
             }
           });
         });
@@ -203,7 +200,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  static Future<List<List<List<int>>>> getNewGame(
+  static Future<List<List<List<int>>>> _getNewGame(
       [String difficulty = 'easy']) async {
     final prefs = await SharedPreferences.getInstance();
     final int emptySquares = prefs.getInt('emptySquares') ?? 20;
@@ -212,141 +209,178 @@ class HomePageState extends State<HomePage> {
     return [generator.newSudoku, generator.newSudokuSolved];
   }
 
-  static List<List<int>> copyGrid(List<List<int>> grid) {
+  static List<List<int>> _copyGrid(List<List<int>> grid) {
     return grid.map((row) => [...row]).toList();
   }
 
-  void setGame(int mode, [String difficulty = 'Easy']) async {
+  void _setGame(int mode, [String difficulty = 'Easy']) async {
     if (mode == 1) {
-      game = List.filled(9, [0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      gameCopy = List.filled(9, [0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      gameSolved = List.filled(9, [0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      game = List.filled(9, List.filled(9, 0));
+      gameSolved = List.filled(9, List.filled(9, 0));
     } else {
-      gameList = await getNewGame(difficulty);
+      gameList = await _getNewGame(difficulty);
       game = gameList[0];
-      gameCopy = copyGrid(game);
       gameSolved = gameList[1];
     }
+    selectedCell = Position(-1, -1);
   }
 
-  void showSolution() {
+  void _showSolution() {
     setState(() {
-      game = copyGrid(gameSolved);
-      isButtonDisabled =
-          !isButtonDisabled ? !isButtonDisabled : isButtonDisabled;
+      game = _copyGrid(gameSolved);
       gameOver = true;
     });
   }
 
-  void newGame([String difficulty = 'Easy']) {
+  void _newGame([String difficulty = 'Easy']) {
     setState(() {
-      isFABDisabled = !isFABDisabled;
     });
     Future.delayed(const Duration(milliseconds: 200), () {
       setState(() {
-        setGame(2, difficulty);
-        isButtonDisabled =
-            isButtonDisabled ? !isButtonDisabled : isButtonDisabled;
+        _setGame(2, difficulty);
         gameOver = false;
-        isFABDisabled = !isFABDisabled;
       });
     });
   }
 
-  void restartGame() {
-    setState(() {
-      game = copyGrid(gameCopy);
-      isButtonDisabled =
-          isButtonDisabled ? !isButtonDisabled : isButtonDisabled;
-      gameOver = false;
-    });
-  }
-
-  List<SizedBox> createButtons() {
+  Widget buildBoard() {
     if (firstRun) {
-      setGame(1);
+      _setGame(1);
       firstRun = false;
     }
 
-    List<SizedBox> buttonList = List<SizedBox>.filled(9, const SizedBox());
-    for (var i = 0; i <= 8; i++) {
-      var k = timesCalled;
-      buttonList[i] = SizedBox(
-        key: Key('grid-button-$k-$i'),
-        width: buttonSize(),
-        height: buttonSize(),
-        child: TextButton(
-          onPressed: isButtonDisabled || gameCopy[k][i] != 0
-              ? null
-              : () {
-                  callback([k, i], KeyPadNumbers.number);
-                    KeyPadNumbers.number = null;
+    List<Row> rowList = <Row>[];
+    for (var row = 0; row < 9; row++) {
+      List<SizedBox> buttonList = List<SizedBox>.filled(9, SizedBox());
+      for (var col = 0; col < 9; col++) {
+        String val = game[row][col] != 0 ? game[row][col].toString() : ' ';
+        Color txt_color = Colors.blue;
+        if (game[row][col] != 0) {
+          if(selectedCell.x != -1 && selectedCell.y != -1) {
+            if (game[row][col] == game[selectedCell.x][selectedCell.y]) {
+              txt_color = Colors.red;
+            }
+          }
+        }
+        buttonList[col] = SizedBox(
+            width: buttonSize(),
+            height: buttonSize(),
+            child: DragTarget<int>(
+              onAccept: (data) => setState(() {
+                if (game[row][col] == 0) {
+                  if (gameSolved[row][col] == data) {
+                    game[row][col] = data;
+                  } else {
+                    print('wrong key');
+                  }
+                }
+              }),
+              builder: (context, _, __) => TextButton(
+                onPressed: () {
+                  setState(() {
+                    selectedCell = Position(row, col);
+                    selectedKey = 0;
+                  });
                 },
-          onLongPress: isButtonDisabled || gameCopy[k][i] != 0
-              ? null
-              : () => callback([k, i], 0),
-          style: ButtonStyle(
-            backgroundColor:
-                MaterialStateProperty.all<Color>(buttonColor(k, i)),
-            foregroundColor: MaterialStateProperty.resolveWith<Color>(
-                (Set<MaterialState> states) {
-              if (states.contains(MaterialState.disabled)) {
-                return gameCopy[k][i] == 0
-                    ? emptyColor(gameOver)
-                    : Styles.foregroundColor;
-              }
-              return game[k][i] == 0
-                  ? buttonColor(k, i)
-                  : Styles.secondaryColor;
-            }),
-            shape: MaterialStateProperty.all<OutlinedBorder>(
-                RoundedRectangleBorder(
-              borderRadius: buttonEdgeRadius(k, i, 9),
-            )),
-            side: MaterialStateProperty.all<BorderSide>(BorderSide(
-              color: Styles.foregroundColor,
-              width: 1,
-              style: BorderStyle.solid,
-            )),
-          ),
-          child: Text(
-            game[k][i] != 0 ? game[k][i].toString() : ' ',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: buttonFontSize()),
-          ),
-        ),
-      );
-    }
-    timesCalled++;
-    if (timesCalled == 9) {
-      timesCalled = 0;
-    }
-    return buttonList;
-  }
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(buttonColor(
+                      row,
+                      col,
+                      (selectedCell.x == row && selectedCell.y == col && game[row][col] == 0))),
+                  side: MaterialStateProperty.all<BorderSide>(BorderSide(
+                    color: (selectedCell.x == row && selectedCell.y == col)
+                        ? Colors.red
+                        : Colors.amber,
+                    width: (selectedCell.x == row && selectedCell.y == col)
+                        ? 2
+                        : 1,
+                    style: BorderStyle.solid,
+                  )),
+                ),
+                child: Text(
+                  val,
+                  style: TextStyle(
+                    color: txt_color,
+                      fontSize: buttonFontSize(),
+                      fontFamily: GoogleFonts.kalam().fontFamily),
+                ),
+              ),
+            ));
+      }
 
-  Row oneRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: createButtons(),
+      rowList.add(Row(
+          mainAxisAlignment: MainAxisAlignment.center, children: buttonList));
+    }
+
+    return Column(
+      children: rowList,
     );
   }
 
-  List<Row> createRows() {
-    List<Row> rowList = List<Row>.generate(9, (i) => oneRow());
-    return rowList;
-  }
+  Widget buildKeyPad() {
+    final List<int> numberListAll = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    List<SizedBox> boxes = <SizedBox>[];
 
-  void callback(List<int> index, int? number) {
-    setState(() {
-      if (number == null) {
-        return;
-      } else if (number == 0) {
-        game[index[0]][index[1]] = number;
-      } else {
-        game[index[0]][index[1]] = number;
-        checkResult();
-      }
-    });
+    for (int number in numberListAll) {
+      boxes.add(SizedBox(
+          child: Draggable<int>(
+        data: number,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+          child: Material(
+            borderRadius: BorderRadius.circular(20.0),
+            elevation: 8.0,
+            child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    selectedKey = number;
+                    // if a cell is selected
+                    if (selectedCell.x != -1 && selectedCell.y != -1) {
+                      // if cell empty
+                      if (game[selectedCell.x][selectedCell.y] == 0) {
+                        // if correct answer is selected
+                        if (gameSolved[selectedCell.x][selectedCell.y] ==
+                            selectedKey) {
+                          game[selectedCell.x][selectedCell.y] = selectedKey;
+                        } else {
+                          print('wrong key');
+                        }
+                      }
+                    }
+                    selectedKey = 0;
+                    selectedCell = Position(-1, -1);
+                  });
+                },
+                child: Text(
+                  number.toString(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: buttonFontSize(),
+                      fontFamily: GoogleFonts.kalam().fontFamily),
+                )),
+          ),
+        ),
+        feedback: Text(
+          number.toString(),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: buttonFontSize(),
+              fontFamily: GoogleFonts.kalam().fontFamily),
+        ),
+        childWhenDragging: Text(
+          " ",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: buttonFontSize(),
+              fontFamily: GoogleFonts.kalam().fontFamily),
+        ),
+      )));
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: boxes,
+    );
   }
 
   showOptionModalSheet(BuildContext context) {
@@ -365,33 +399,6 @@ class HomePageState extends State<HomePage> {
               TextStyle(inherit: false, color: Styles.foregroundColor);
           return Wrap(
             children: [
-              // ListTile(
-              //   leading: Icon(Icons.refresh, color: Styles.foregroundColor),
-              //   title: Text('Restart Game', style: customStyle),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Timer(const Duration(milliseconds: 200), () => restartGame());
-              //   },
-              // ),
-              // ListTile(
-              //   leading: Icon(Icons.add_rounded, color: Styles.foregroundColor),
-              //   title: Text('New Game', style: customStyle),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Timer(const Duration(milliseconds: 200),
-              //         () => newGame(currentDifficultyLevel!));
-              //   },
-              // ),
-              // ListTile(
-              //   leading: Icon(Icons.lightbulb_outline_rounded,
-              //       color: Styles.foregroundColor),
-              //   title: Text('Show Solution', style: customStyle),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Timer(
-              //         const Duration(milliseconds: 200), () => showSolution());
-              //   },
-              // ),
               ListTile(
                 leading:
                     Icon(Icons.build_outlined, color: Styles.foregroundColor),
@@ -409,7 +416,7 @@ class HomePageState extends State<HomePage> {
                                   currentDifficultyLevel!)).whenComplete(() {
                             if (AlertDifficultyState.difficulty != null) {
                               Timer(const Duration(milliseconds: 300), () {
-                                newGame(
+                                _newGame(
                                     AlertDifficultyState.difficulty ?? 'test');
                                 currentDifficultyLevel =
                                     AlertDifficultyState.difficulty;
@@ -427,7 +434,7 @@ class HomePageState extends State<HomePage> {
                 onTap: () {
                   Navigator.pop(context);
                   Timer(const Duration(milliseconds: 200), () {
-                    changeTheme('switch');
+                    _changeTheme('switch');
                   });
                 },
               ),
@@ -450,7 +457,7 @@ class HomePageState extends State<HomePage> {
                               Timer(const Duration(milliseconds: 300), () {
                                 currentAccentColor =
                                     AlertAccentColorsState.accentColor;
-                                changeAccentColor(
+                                _changeAccentColor(
                                     currentAccentColor.toString());
                                 AlertAccentColorsState.accentColor = null;
                                 setPrefs('currentAccentColor');
@@ -482,6 +489,11 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (firstRun) {
+      _setGame(1);
+      firstRun = false;
+    }
+
     return WillPopScope(
         onWillPop: () async {
           if (kIsWeb) {
@@ -545,7 +557,7 @@ class HomePageState extends State<HomePage> {
                           onPressed: () {
                             //Navigator.pop(context);
                             Timer(const Duration(milliseconds: 200),
-                                () => restartGame());
+                                () => _newGame());
                           },
                         ),
                         IconButton(
@@ -554,30 +566,23 @@ class HomePageState extends State<HomePage> {
                           onPressed: () {
                             //Navigator.pop(context);
                             Timer(const Duration(milliseconds: 200),
-                                () => showSolution());
+                                () => _showSolution());
                           },
                         ),
                       ],
                     ),
             ),
             body: Builder(builder: (builder) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Column(
-                        children: createRows(),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: Column(
-                          children: keyPad.createKeyPad(),
-                        ),
-                      ),
-                    ],
-                  ),
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    buildBoard(),
+                    SizedBox(height: 10),
+                    buildKeyPad(),
+                  ],
                 ),
               );
             }),
