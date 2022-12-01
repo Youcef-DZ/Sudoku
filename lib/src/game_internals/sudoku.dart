@@ -52,7 +52,6 @@ class HomePageState extends State<HomePage> {
   bool firstRun = true;
   bool gameOver = false;
   bool isFABDisabled = false;
-  late int selectedKey;
   late Position selectedCell;
   late List<List<List<int>>> gameList;
   late List<List<int>> game;
@@ -233,8 +232,7 @@ class HomePageState extends State<HomePage> {
   }
 
   void _newGame([String difficulty = 'Easy']) {
-    setState(() {
-    });
+    setState(() {});
     Future.delayed(const Duration(milliseconds: 200), () {
       setState(() {
         _setGame(2, difficulty);
@@ -254,58 +252,82 @@ class HomePageState extends State<HomePage> {
       List<SizedBox> buttonList = List<SizedBox>.filled(9, SizedBox());
       for (var col = 0; col < 9; col++) {
         String val = game[row][col] != 0 ? game[row][col].toString() : ' ';
-        Color txt_color = Colors.blue;
+        // Color txt_color = Styles.primaryColor;
         if (game[row][col] != 0) {
-          if(selectedCell.x != -1 && selectedCell.y != -1) {
+          if (selectedCell.x != -1 && selectedCell.y != -1) {
             if (game[row][col] == game[selectedCell.x][selectedCell.y]) {
-              txt_color = Colors.red;
+              //   txt_color = Colors.red;
             }
           }
         }
         buttonList[col] = SizedBox(
-            width: buttonSize(),
-            height: buttonSize(),
-            child: DragTarget<int>(
-              onAccept: (data) => setState(() {
-                if (game[row][col] == 0) {
-                  if (gameSolved[row][col] == data) {
-                    game[row][col] = data;
-                  } else {
-                    print('wrong key');
-                  }
+          width: buttonSize(),
+          height: buttonSize(),
+          child: DragTarget<int>(
+            onAccept: (data) => setState(() {
+              if (game[row][col] == 0) {
+                if (gameSolved[row][col] == data) {
+                  game[row][col] = data;
+                } else {
+                  print('wrong key');
                 }
-              }),
-              builder: (context, _, __) => TextButton(
-                onPressed: () {
-                  setState(() {
-                    selectedCell = Position(row, col);
-                    selectedKey = 0;
-                  });
-                },
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(buttonColor(
-                      row,
-                      col,
-                      (selectedCell.x == row && selectedCell.y == col && game[row][col] == 0))),
-                  side: MaterialStateProperty.all<BorderSide>(BorderSide(
-                    color: (selectedCell.x == row && selectedCell.y == col)
-                        ? Colors.red
-                        : Colors.amber,
-                    width: (selectedCell.x == row && selectedCell.y == col)
-                        ? 2
-                        : 1,
-                    style: BorderStyle.solid,
-                  )),
-                ),
-                child: Text(
-                  val,
-                  style: TextStyle(
-                    color: txt_color,
-                      fontSize: buttonFontSize(),
-                      fontFamily: GoogleFonts.kalam().fontFamily),
-                ),
+              }
+            }),
+            builder: (context, _, __) => TextButton(
+              onPressed: () {
+                setState(() {
+                  selectedCell = Position(row, col);
+                });
+              },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(buttonColor(
+                  row,
+                  col,
+                )),
+                foregroundColor: MaterialStateProperty.resolveWith<Color>(
+                    (Set<MaterialState> states) {
+                  return game[row][col] == 0
+                      ? buttonColor(row, col)
+                      : Styles.foregroundColor;
+                }),
+                shape: MaterialStateProperty.all<OutlinedBorder>(
+                    RoundedRectangleBorder(
+                  borderRadius: buttonEdgeRadius(row, col),
+                )),
+                side: MaterialStateProperty.all<BorderSide>(BorderSide(
+                  color: (selectedCell.x == row &&
+                          selectedCell.y == col &&
+                          game[row][col] == 0)
+                      ? Styles.primaryColor
+                      : Styles.foregroundColor,
+                  width: (selectedCell.x == row &&
+                          selectedCell.y == col &&
+                          game[row][col] == 0)
+                      ? 3
+                      : 1,
+                  style: BorderStyle.solid,
+                )),
               ),
-            ));
+              child: Text(
+                val,
+                style: TextStyle(
+                    color: ((game[row][col] != 0) &&
+                            (selectedCell.x != -1 && selectedCell.y != -1) &&
+                            (game[row][col] ==
+                                game[selectedCell.x][selectedCell.y]))
+                        ? Styles.primaryColor
+                        : Styles.foregroundColor,
+                    fontWeight: ((game[row][col] != 0) &&
+                            (selectedCell.x != -1 && selectedCell.y != -1) &&
+                            (game[row][col] ==
+                                game[selectedCell.x][selectedCell.y]))
+                        ? FontWeight.bold : FontWeight.w500,
+                    fontSize: buttonFontSize(),
+                    fontFamily: GoogleFonts.kalam().fontFamily),
+              ),
+            ),
+          ),
+        );
       }
 
       rowList.add(Row(
@@ -322,59 +344,89 @@ class HomePageState extends State<HomePage> {
     List<SizedBox> boxes = <SizedBox>[];
 
     for (int number in numberListAll) {
-      boxes.add(SizedBox(
+      boxes.add(
+        SizedBox(
+          width: buttonSize(),
+          height: buttonSize(),
           child: Draggable<int>(
-        data: number,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 3.0),
-          child: Material(
-            borderRadius: BorderRadius.circular(20.0),
-            elevation: 8.0,
+            data: number,
             child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    selectedKey = number;
+              onPressed: () {
+                setState(
+                  () {
                     // if a cell is selected
                     if (selectedCell.x != -1 && selectedCell.y != -1) {
                       // if cell empty
                       if (game[selectedCell.x][selectedCell.y] == 0) {
                         // if correct answer is selected
                         if (gameSolved[selectedCell.x][selectedCell.y] ==
-                            selectedKey) {
-                          game[selectedCell.x][selectedCell.y] = selectedKey;
+                            number) {
+                          game[selectedCell.x][selectedCell.y] = number;
                         } else {
                           print('wrong key');
                         }
                       }
                     }
-                    selectedKey = 0;
                     selectedCell = Position(-1, -1);
-                  });
-                },
-                child: Text(
-                  number.toString(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: buttonFontSize(),
-                      fontFamily: GoogleFonts.kalam().fontFamily),
+                  },
+                );
+              },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Styles.primaryBackgroundColor),
+                foregroundColor:
+                    MaterialStateProperty.all<Color>(Styles.foregroundColor),
+                shape: MaterialStateProperty.all<OutlinedBorder>(
+                    RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
                 )),
+                side: MaterialStateProperty.all<BorderSide>(BorderSide(
+                  color: Styles.foregroundColor,
+                  width: 1,
+                  style: BorderStyle.solid,
+                )),
+              ),
+              child: Text(
+                number.toString(),
+                style: TextStyle(
+                    fontSize: buttonFontSize(),
+                    fontWeight: (selectedCell.x != -1 &&
+                            selectedCell.y != -1 &&
+                            (game[selectedCell.x][selectedCell.y] == 0))
+                        ? FontWeight.bold
+                        : FontWeight.w100,
+                    fontFamily: GoogleFonts.kalam().fontFamily),
+              ),
+            ),
+            feedback: TextButton(
+              onPressed: () {},
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Styles.primaryBackgroundColor),
+                foregroundColor:
+                    MaterialStateProperty.all<Color>(Styles.foregroundColor),
+                shape: MaterialStateProperty.all<OutlinedBorder>(
+                    RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                )),
+                side: MaterialStateProperty.all<BorderSide>(BorderSide(
+                  color: Styles.foregroundColor,
+                  width: 1,
+                  style: BorderStyle.solid,
+                )),
+              ),
+              child: Text(
+                number.toString(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: buttonFontSize(),
+                    fontFamily: GoogleFonts.kalam().fontFamily),
+              ),
+            ),
           ),
         ),
-        feedback: Text(
-          number.toString(),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: buttonFontSize(),
-              fontFamily: GoogleFonts.kalam().fontFamily),
-        ),
-        childWhenDragging: Text(
-          " ",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: buttonFontSize(),
-              fontFamily: GoogleFonts.kalam().fontFamily),
-        ),
-      )));
+      );
     }
 
     return Row(
@@ -580,7 +632,7 @@ class HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     buildBoard(),
-                    SizedBox(height: 10),
+                    SizedBox(height: 20),
                     buildKeyPad(),
                   ],
                 ),
