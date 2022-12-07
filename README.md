@@ -5,7 +5,3 @@ the following features:
 - music
 - main menu screen
 - settings
-- ads (AdMob)
-- in-app purchases
-- games services (Game Center & Google Play Games Services)
-- crash reporting (Firebase Crashlytics)
