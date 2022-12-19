@@ -59,6 +59,7 @@ class HomePageState extends State<HomePage> {
   static String? currentDifficultyLevel;
   static String? currentTheme;
   static String? currentAccentColor;
+  final stopwatch = Stopwatch()..start();
 
   static String platform = () {
     if (kIsWeb) {
@@ -75,6 +76,10 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      const oneSecond = const Duration(seconds: 1);
+      new Timer.periodic(oneSecond, (Timer t) => setState(() {}));
+    });
     try {
       doWhenWindowReady(() {
         appWindow.alignment = Alignment.center;
@@ -237,6 +242,7 @@ class HomePageState extends State<HomePage> {
       setState(() {
         _setGame(2, difficulty);
         gameOver = false;
+        stopwatch.reset();
       });
     });
   }
@@ -268,6 +274,7 @@ class HomePageState extends State<HomePage> {
               if (game[row][col] == 0) {
                 if (gameSolved[row][col] == data) {
                   game[row][col] = data;
+                  _checkResult();
                 } else {
                   print('wrong key');
                 }
@@ -321,7 +328,8 @@ class HomePageState extends State<HomePage> {
                             (selectedCell.x != -1 && selectedCell.y != -1) &&
                             (game[row][col] ==
                                 game[selectedCell.x][selectedCell.y]))
-                        ? FontWeight.bold : FontWeight.w500,
+                        ? FontWeight.bold
+                        : FontWeight.w500,
                     fontSize: buttonFontSize(),
                     fontFamily: GoogleFonts.kalam().fontFamily),
               ),
@@ -336,6 +344,20 @@ class HomePageState extends State<HomePage> {
 
     return Column(
       children: rowList,
+    );
+  }
+
+  String prettyDuration(Duration duration) {
+    var seconds = (duration.inMilliseconds % (60 * 1000)) / 1000;
+    String s = seconds.floor().toString();
+    if (seconds.floor() < 10) s = '0' + seconds.floor().toString(); 
+    return '${duration.inMinutes}:${s}';
+  }
+
+  Widget header() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [Text(prettyDuration(stopwatch.elapsed))],
     );
   }
 
@@ -354,6 +376,7 @@ class HomePageState extends State<HomePage> {
               onPressed: () {
                 setState(
                   () {
+                    _checkResult();
                     // if a cell is selected
                     if (selectedCell.x != -1 && selectedCell.y != -1) {
                       // if cell empty
@@ -631,6 +654,9 @@ class HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    SizedBox(height: 20),
+                    header(),
+                    SizedBox(height: 20),
                     buildBoard(),
                     SizedBox(height: 20),
                     buildKeyPad(),
