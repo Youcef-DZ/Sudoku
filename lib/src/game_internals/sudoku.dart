@@ -8,6 +8,7 @@
 // import 'firebase_options.dart';
 
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
@@ -56,6 +57,7 @@ class HomePageState extends State<HomePage> {
   late List<List<List<int>>> gameList;
   late List<List<int>> game;
   late List<List<int>> gameSolved;
+
   static String? currentDifficultyLevel;
   static String? currentTheme;
   static String? currentAccentColor;
@@ -204,6 +206,18 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  bool _disableKey(int number) {
+    // TO-DO, Optmize, this function runs on every refresh on every key button
+    int rep = 0;
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        if (game[i][j] == number) rep++;
+      }
+    }
+
+    return rep >= 9;
+  }
+
   static Future<List<List<List<int>>>> _getNewGame(
       [String difficulty = 'easy']) async {
     final prefs = await SharedPreferences.getInstance();
@@ -350,7 +364,7 @@ class HomePageState extends State<HomePage> {
   String prettyDuration(Duration duration) {
     var seconds = (duration.inMilliseconds % (60 * 1000)) / 1000;
     String s = seconds.floor().toString();
-    if (seconds.floor() < 10) s = '0' + seconds.floor().toString(); 
+    if (seconds.floor() < 10) s = '0' + seconds.floor().toString();
     return '${duration.inMinutes}:${s}';
   }
 
@@ -362,8 +376,8 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildKeyPad() {
-    final List<int> numberListAll = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     List<SizedBox> boxes = <SizedBox>[];
+    List<int> numberListAll = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     for (int number in numberListAll) {
       boxes.add(
@@ -372,53 +386,59 @@ class HomePageState extends State<HomePage> {
           height: buttonSize(),
           child: Draggable<int>(
             data: number,
-            child: TextButton(
-              onPressed: () {
-                setState(
-                  () {
-                    _checkResult();
-                    // if a cell is selected
-                    if (selectedCell.x != -1 && selectedCell.y != -1) {
-                      // if cell empty
-                      if (game[selectedCell.x][selectedCell.y] == 0) {
-                        // if correct answer is selected
-                        if (gameSolved[selectedCell.x][selectedCell.y] ==
-                            number) {
-                          game[selectedCell.x][selectedCell.y] = number;
-                        } else {
-                          print('wrong key');
+            child: IgnorePointer(
+              ignoring: _disableKey(number),
+              child: TextButton(
+                onPressed: () {
+                  setState(
+                    () {
+                      _checkResult();
+                      // if a cell is selected
+                      if (selectedCell.x != -1 && selectedCell.y != -1) {
+                        // if cell empty
+                        if (game[selectedCell.x][selectedCell.y] == 0) {
+                          // if correct answer is selected
+                          if (gameSolved[selectedCell.x][selectedCell.y] ==
+                              number) {
+                            game[selectedCell.x][selectedCell.y] = number;
+                          } else {
+                            print('wrong key');
+                          }
                         }
                       }
-                    }
-                    selectedCell = Position(-1, -1);
-                  },
-                );
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
-                    Styles.primaryBackgroundColor),
-                foregroundColor:
-                    MaterialStateProperty.all<Color>(Styles.foregroundColor),
-                shape: MaterialStateProperty.all<OutlinedBorder>(
-                    RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                )),
-                side: MaterialStateProperty.all<BorderSide>(BorderSide(
-                  color: Styles.foregroundColor,
-                  width: 1,
-                  style: BorderStyle.solid,
-                )),
-              ),
-              child: Text(
-                number.toString(),
-                style: TextStyle(
-                    fontSize: buttonFontSize(),
-                    fontWeight: (selectedCell.x != -1 &&
-                            selectedCell.y != -1 &&
-                            (game[selectedCell.x][selectedCell.y] == 0))
-                        ? FontWeight.bold
-                        : FontWeight.w100,
-                    fontFamily: GoogleFonts.kalam().fontFamily),
+                      selectedCell = Position(-1, -1);
+                      // _updateKeyPad();
+                    },
+                  );
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Styles.primaryBackgroundColor),
+                  foregroundColor:
+                      MaterialStateProperty.all<Color>(Styles.foregroundColor),
+                  shape: MaterialStateProperty.all<OutlinedBorder>(
+                      RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  )),
+                  side: MaterialStateProperty.all<BorderSide>(BorderSide(
+                    color: Styles.foregroundColor,
+                    width: _disableKey(number) ? 0 : 1,
+                    style: _disableKey(number)
+                        ? BorderStyle.none
+                        : BorderStyle.solid,
+                  )),
+                ),
+                child: Text(
+                  _disableKey(number) ? "" : number.toString(),
+                  style: TextStyle(
+                      fontSize: buttonFontSize(),
+                      fontWeight: (selectedCell.x != -1 &&
+                              selectedCell.y != -1 &&
+                              (game[selectedCell.x][selectedCell.y] == 0))
+                          ? FontWeight.bold
+                          : FontWeight.w100,
+                      fontFamily: GoogleFonts.kalam().fontFamily),
+                ),
               ),
             ),
             feedback: TextButton(
